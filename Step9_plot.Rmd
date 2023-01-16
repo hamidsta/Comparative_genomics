@@ -1,0 +1,33 @@
+```{r}
+
+new_ks=read.csv('D:/ROSALIND_problems/comparative genomics/Ks_new_treshold.csv',sep = , )
+
+ks=new_ks
+# 1. Create the histogram plot
+phist <- gghistogram(
+  ks, x = "Ks" ,fill = 'Ks',binwidth = 0.05,xlab = 'Synonymous Divergence (Ks)',ylab ='Duplicated Pairs Frequency' ,bins = 0.5)
+
+
+# 2. Create the density plot with y-axis on the right
+# Remove x axis elements
+pdensity <- ggdensity(
+  ks, x = "Ks",
+  alpha = 0,color = 'Red',
+) +
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.01)), position = "right")  +
+  theme_half_open(11, rel_small = 1) +
+  rremove("x.axis")+
+  rremove("xlab") +
+  rremove("x.text") +
+  rremove("x.ticks") +
+  rremove("legend")
+
+# 3. Align the two plots and then overlay them.
+aligned_plots <- align_plots(phist, pdensity, align="hv", axis="tblr")
+ggdraw(aligned_plots[[1]]) + draw_plot(aligned_plots[[2]])
+
+
+
+
+```
+

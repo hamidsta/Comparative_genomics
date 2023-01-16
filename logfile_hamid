@@ -1,0 +1,84 @@
+#####################Log file   comparative Genomics project #####################
+# Student: Sta Abdelhamid 
+# Data : Prunus Persica 
+
+
+############### 1) blastp ##################
+
+#A blastp (Basic Local Alignment Search Tool Protein)   all against all have been realized on the protein sequence. 
+#Done by the Professor 
+
+
+############### 2) choose the longest isoforms ##################
+#Done by the Professor 
+
+
+
+############### 3) Calculate the length of protein and the coverage and merge them with blasp results 
+
+# The length ofthe  sequences have been found through the C program calcul_longueur_fastaSeq_2020.c given by the professor 
+# on the file Prunus_persica.Prunus_persica_NCBIv2.pep.all.fa
+# running : 
+
+gcc calcul_longueur_fastaSeq_2020.c && ./a.out Prunus_persica.Prunus_persica_NCBIv2.pep.all.fa >seuqence_length
+
+# need to employ manual changement : 
+# in file, replace > with blank
+sed 's/>//' seuqence_length >seuqence_length1
+
+# sort all column and keep only  the first and second column
+sort -d -k 2 seuqence_length1 |grep -v '^$'|awk '{print $1,$2}'>seuqence_length1_sort 
+
+# sort the longisoform file by the first column which is the query sequence id
+sort -d -k 1 Phaseolus_vulgaris_Blastp_longIsoforme > Blastp_longIsoforme_sort
+
+# add the length of the query sequence
+join -1 1 -2 2 Blastp_longIsoforme_sort seuqence_length1_sort > join1
+
+# sort the file by the second column which is the subject sequence id
+sort -d -k 2 join1 >blastp_subject_sort
+
+# add the length of the subject sequence
+join -1 2 -2 2 blastp_subject_sort length_sort > join2
+
+# calculate the coverage for query
+awk '{print $0,($8-$7+1)/$13}' join2 > join_query_coverage
+
+#calculate the coverage for subject
+awk '{print $0,($10-$9+1)/$14}' join_query_coverage > Blastp_longIsoforme_complete
+
+###################### 4) Filtering  the homologs##################
+# I decided to  filter the homologs by using the most common treshold of  30% of identity and 50% of coverage as described during the courses
+
+awk ' {if ($15>0.5 && $16>0.5 && $3>30) {print $0}} ' Blastp_longIsoforme_complete > Blastp_longIsoforme_filtered
+
+############### 5) using Galaxy to found cluster  by using cluster method :MCL  http://stat.genopole.cnrs.fr/galaxy/ ############
+
+# need to create a file with tab as the indents between all columns
+echo "ProteinIDA" "ProteinIDB" "bitScore" > homologos.txt
+awk ' {print $1,$2,$12} ' Blastp_longIsoforme_filtered >> homologos.txt
+
+
+
+############### 6)  python script to calaculate all gene pairs who belongs to the same clusters  
+# The script is called ALL_paires , and i will take as input the data getting from Galaxy platform
+# then it willl parse the file and found all pairs of i / i+1. 
+# output will be the fill all_pairs 
+
+
+############### 7) Retrive  all the cds sequences of each protein through Ensembl Plants Database https://plants.ensembl.org/index.html 
+# and choosing CDS for prunus persica 
+
+
+#############8 ) Calculate  KS value for all pairs 
+# the script calculate_KS , will take as input file from step 6 , performing alignement of the sequence using clustalW and then using pal2nal and y00 to get the KS . 
+# based on the tutorial available one  ecampus 
+
+
+
+########### 9) tresholding of the KS value is based on the standard deviation , removing all pairs with KS value inferior to SD computed 
+
+
+##########" 10) finally with the file of pairs / ks value , a historgram have been plotted used R studio 
+
+
